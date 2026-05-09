@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPSC Command Centre — IAS 2027</title>
+
+  <!-- Google Fonts (loads with internet; falls back to system fonts offline) -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+
+  <!-- All shared styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     LOCK SCREEN — shown until correct password entered
+     ══════════════════════════════════════════════════════════ -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <span class="lock-emblem">&#9672; UPSC Command Centre &middot; IAS 2027</span>
+    <div class="lock-title">Private<br><span>Access Only</span></div>
+    <p class="lock-sub">Enter your password to continue</p>
+    <input class="lock-input" type="password" id="lockPassword"
+      placeholder="Enter password" autocomplete="off"/>
+    <button class="lock-btn" id="lockBtn" onclick="unlock()">Unlock</button>
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-hint">
+      First time? Any password you enter becomes your permanent password.<br>
+      Set your GitHub token in the &#9881; Setup tab after unlocking.<br><br>
+      Wrong password = blank screen. Only you can get in.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP SHELL — hidden until unlock
+     ══════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none;">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="emblem">&#9672; UPSC Civil Services &middot; IAS 2027 &middot; Password Protected &middot; GitHub Pages</div>
+      <h1>Command Centre &mdash; <span>IAS 2027</span></h1>
+      <div class="badge-row">
+        <span class="badge">&#11044; Phase 1 Active</span>
+        <span class="badge">~14 Months to Prelims</span>
+        <span class="badge">Self Study &middot; Free Online</span>
+        <span class="badge green">Notes &rarr; Private GitHub Repo</span>
+        <span class="badge blue">&#128274; Session Secured</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sync status bar -->
+  <div id="syncBar">
+    <div class="inner">
+      <span id="syncMsg"></span>
+      <div style="display:flex;gap:0.75rem;align-items:center;">
+        <a id="repoLink" href="#" target="_blank"
+          style="color:inherit;opacity:0.7;font-size:0.65rem;display:none;">
+          View Notes Repo &#8599;
+        </a>
+        <button class="btn" onclick="syncAllNotes()"
+          style="background:transparent;border:1px solid currentColor;padding:0.2rem 0.7rem;font-size:0.62rem;">
+          &#8635; Force Sync
+        </button>
+        <button class="btn" onclick="lockApp()"
+          style="background:transparent;border:1px solid #5a3a1a;color:#8a6a3a;padding:0.2rem 0.7rem;font-size:0.62rem;">
+          &#128274; Lock
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="tab active" onclick="showTab('overview')">Overview</div>
+      <div class="tab" onclick="showTab('roadmap')">Roadmap</div>
+      <div class="tab" onclick="showTab('subjects')">Subjects</div>
+      <div class="tab" onclick="showTab('optional')">Optional</div>
+      <div class="tab" onclick="showTab('schedule')">Schedule</div>
+      <div class="tab" onclick="showTab('resources')">Resources</div>
+      <div class="tab" onclick="showTab('notes')">My Notes</div>
+      <div class="tab" onclick="showTab('setup')">&#9881; Setup</div>
+    </div>
+  </nav>
+
+  <!-- Main content area — pages load here -->
+  <main class="main" id="mainContent">
+    <div style="text-align:center;padding:3rem;color:var(--muted);font-style:italic;">
+      Loading...
+    </div>
+  </main>
+
+</div><!-- end #app -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT — load all modules
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- State initialisation (must come before other modules) -->
+<script>
+  // Global shared state — accessible by all JS modules
+  window.notes = [];
+  window.cfg   = { username: '', notesRepo: 'upsc-notes' };
+
+  // Cache for loaded page HTML so we only fetch each page once
+  window._pageCache = {};
+</script>
+
+<!-- JS modules -->
+<script src="js/notes.js"></script>
+<script src="js/github.js"></script>
+<script src="js/auth.js"></script>
+
+<!-- App controller -->
+<script>
+'use strict';
+
+/* ── PAGE LOADER ── */
+const PAGES = ['overview','roadmap','subjects','optional','schedule','resources','notes','setup'];
+let currentTab = 'overview';
+
+async function loadPage(name) {
+  if (window._pageCache[name]) return window._pageCache[name];
+  const res  = await fetch(`pages/${name}.html`);
+  const html = await res.text();
+  window._pageCache[name] = html;
+  return html;
+}
+
+async function showTab(name) {
+  if (!PAGES.includes(name)) return;
+  currentTab = name;
+
+  // Update nav tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.textContent.trim().toLowerCase().replace(/[^a-z]/g,'').startsWith(name.replace(/-/g,'').toLowerCase()));
+  });
+
+  // More precise tab matching
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const tabMap = {
+    overview: 0, roadmap: 1, subjects: 2, optional: 3,
+    schedule: 4, resources: 5, notes: 6, setup: 7
+  };
+  const tabs = document.querySelectorAll('.tab');
+  if (tabs[tabMap[name]]) tabs[tabMap[name]].classList.add('active');
+
+  // Load and inject page content
+  const html = await loadPage(name);
+  document.getElementById('mainContent').innerHTML = html;
+
+  // Re-run notes render if switching to notes tab
+  if (name === 'notes') {
+    updateUI();
+    renderNotes();
+  }
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── UPDATE UI ── */
+function updateUI() {
+  const connected = !!(window.cfg.token && window.cfg.username);
+
+  // Sync bar
+  const sb = document.getElementById('syncBar');
+  if (sb) sb.style.display = connected ? 'block' : 'none';
+
+  // Notes tab banners (only exist when notes tab is active)
+  const ncb = document.getElementById('notConnectedBanner');
+  const cb  = document.getElementById('connectedBanner');
+  if (ncb) ncb.style.display = connected ? 'none' : 'flex';
+  if (cb)  cb.style.display  = connected ? 'flex' : 'none';
+
+  const dbtn = document.getElementById('disconnectBtn');
+  if (dbtn) dbtn.style.display = connected ? 'inline-block' : 'none';
+
+  if (connected) {
+    const url = `https://github.com/${window.cfg.username}/${window.cfg.notesRepo}`;
+    const nrl = document.getElementById('notesRepoLink');
+    if (nrl) nrl.href = url;
+    const rl = document.getElementById('repoLink');
+    if (rl) { rl.href = url; rl.style.display = 'inline'; }
+
+    setSyncStatus('synced', `&#11044; Connected &mdash; ${window.cfg.username}/${window.cfg.notesRepo}`);
+
+    // Pre-fill setup form if on setup tab
+    const it = document.getElementById('inputUsername');
+    const ir = document.getElementById('inputNotesRepo');
+    const itk = document.getElementById('inputToken');
+    if (it)  it.value  = window.cfg.username;
+    if (ir)  ir.value  = window.cfg.notesRepo;
+    if (itk) itk.value = '\u2022'.repeat(20);
+  }
+
+  updateNoteCount();
+}
+
+/* ── INIT ── */
+async function init() {
+  // Load the default tab (overview) immediately on unlock
+  await showTab('overview');
+}
+
+// Override openApp from auth.js to also init tabs
+const _originalOpenApp = window.openApp;
+window.openApp = async function() {
+  await _originalOpenApp.call(this);
+  await init();
+};
+</script>
+
+</body>
+</html>

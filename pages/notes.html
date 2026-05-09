@@ -1,0 +1,73 @@
+<!-- pages/notes.html -->
+<!-- ═══ NOTES TAB ═══ -->
+<div class="sec-head">
+  <h2>My Study Notes</h2>
+  <p>Private GitHub Repo &middot; Per-Subject Markdown Files &middot; Version Controlled</p>
+</div>
+
+<!-- Not connected warning -->
+<div id="notConnectedBanner" style="background:#1a1200;border:1px solid #3a2a00;border-radius:2px;padding:1rem 1.4rem;margin-bottom:1.4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+  <div>
+    <span style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;color:#c8953a;text-transform:uppercase;">&#9888; GitHub Not Connected</span>
+    <p style="font-size:0.85rem;color:#a89060;margin-top:0.2rem;">Notes are saving to session only. Connect your private repo in &#9881; Setup to persist to GitHub.</p>
+  </div>
+  <button class="btn btn-gold" onclick="showTab('setup')">Set Up GitHub &rarr;</button>
+</div>
+
+<!-- Connected banner -->
+<div id="connectedBanner" style="display:none;background:#0a1a0a;border:1px solid #2a5a2a;border-radius:2px;padding:1rem 1.4rem;margin-bottom:1.4rem;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+  <div>
+    <span style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;color:#7ab87a;text-transform:uppercase;">&#11044; Synced to Private GitHub Repo</span>
+    <p style="font-size:0.85rem;color:#a8c8a8;margin-top:0.2rem;">Each subject is a .md file. Browse them directly on GitHub. Full version history of every note.</p>
+  </div>
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+    <button class="btn btn-green" onclick="syncAllNotes()">&#8635; Sync All</button>
+    <a id="notesRepoLink" href="#" target="_blank" class="btn btn-outline" style="text-decoration:none;">View Repo &#8599;</a>
+  </div>
+</div>
+
+<!-- Add note form -->
+<div class="card">
+  <span class="card-label">Add New Note</span>
+  <div class="notes-controls">
+    <select id="noteSubject">
+      <option value="">&#8212; Select Subject &#8212;</option>
+      <option value="Polity">Indian Polity</option>
+      <option value="Modern-History">Modern History</option>
+      <option value="Ancient-History">Ancient &amp; Medieval History</option>
+      <option value="Geography">Geography</option>
+      <option value="Economy">Indian Economy</option>
+      <option value="Environment">Environment &amp; Ecology</option>
+      <option value="Science-and-Tech">Science &amp; Technology</option>
+      <option value="International-Relations">International Relations</option>
+      <option value="Ethics">Ethics &amp; Integrity</option>
+      <option value="Current-Affairs">Current Affairs</option>
+      <option value="CSAT">CSAT</option>
+      <option value="Public-Administration">Public Administration</option>
+      <option value="Art-and-Culture">Art &amp; Culture</option>
+    </select>
+    <input type="text" id="noteTitle" placeholder="Title &mdash; e.g. Fundamental Rights (Art. 12&ndash;35)">
+  </div>
+  <textarea class="note-input" id="noteBody"
+    placeholder="Write your note in your own words.&#10;&#10;Key points, important articles, dates, schemes, mnemonics, examples...&#10;&#10;Rule: Never copy-paste. Always rephrase. That is how memory works.">
+  </textarea>
+  <button class="btn btn-gold" onclick="addNote()">Save &amp; Sync to GitHub</button>
+  &nbsp;
+  <button class="btn btn-outline" onclick="clearNoteForm()">Clear</button>
+</div>
+
+<!-- Filters -->
+<div class="filter-row">
+  <button class="filter-btn active" onclick="filterNotes('all',this)">All</button>
+  <button class="filter-btn" onclick="filterNotes('Polity',this)">Polity</button>
+  <button class="filter-btn" onclick="filterNotes('Modern-History',this)">History</button>
+  <button class="filter-btn" onclick="filterNotes('Geography',this)">Geography</button>
+  <button class="filter-btn" onclick="filterNotes('Economy',this)">Economy</button>
+  <button class="filter-btn" onclick="filterNotes('Environment',this)">Environment</button>
+  <button class="filter-btn" onclick="filterNotes('Science-and-Tech',this)">Sci &amp; Tech</button>
+  <button class="filter-btn" onclick="filterNotes('Current-Affairs',this)">Current Affairs</button>
+  <button class="filter-btn" onclick="filterNotes('Public-Administration',this)">Pub Ad</button>
+</div>
+
+<div id="notesCount" style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);margin-bottom:0.75rem;"></div>
+<div id="notesList"></div>

@@ -1,0 +1,109 @@
+<!-- ═══ pages/setup.html ═══ -->
+<!-- ═══ SETUP TAB ═══ -->
+<div class="sec-head">
+  <h2>Setup &amp; Security</h2>
+  <p>Password Gate &middot; Encrypted Token &middot; Private GitHub Repo</p>
+</div>
+
+<div class="arch-box">  SECURITY MODEL
+  ─────────────────────────────────────────────────────────────────
+
+  Anyone opens your GitHub Pages URL
+          |
+          v
+  [ PASSWORD GATE ] --- wrong password ---> blank screen, nothing exposed
+          |
+     correct password
+          |
+          v
+  [ App unlocks ] --- token decrypted from localStorage with your password
+          |
+          v                            PRIVATE REPO (upsc-notes)
+  [ You save a note ] ------------>    notes/Polity.md
+                                       notes/Modern-History.md
+  Token encrypted: AES-256-GCM         notes/Geography.md
+  Key derived via: PBKDF2 x200,000     notes/Economy.md
+  Stored as: encrypted blob only       notes/Current-Affairs.md
+  Useless without your password.       ...one file per subject
+                                       Full git history = every version saved</div>
+
+<!-- Password section -->
+<div class="card">
+  <span class="card-label">&#128274; Password Management</span>
+  <div class="card-title">Set or Change Your App Password</div>
+  <p style="font-size:0.9rem;margin-bottom:1rem;color:var(--muted);">First time unlocking? Any password you typed becomes your password permanently. Use this section to change it later.</p>
+  <div class="setup-field">
+    <label>Current Password (blank if first time)</label>
+    <input type="password" id="currentPwd" placeholder="Current password" autocomplete="off"/>
+  </div>
+  <div class="setup-field">
+    <label>New Password (min 6 characters)</label>
+    <input type="password" id="newPwd" placeholder="Choose a strong password" autocomplete="off"/>
+  </div>
+  <div class="setup-field">
+    <label>Confirm New Password</label>
+    <input type="password" id="confirmPwd" placeholder="Repeat new password" autocomplete="off"/>
+  </div>
+  <button class="btn btn-gold" onclick="changePassword()">Set Password</button>
+  <div id="pwdStatus" style="font-family:'DM Mono',monospace;font-size:0.72rem;margin-top:0.75rem;"></div>
+</div>
+
+<!-- GitHub connection -->
+<div class="card sage">
+  <span class="card-label">GitHub Private Repo Connection</span>
+  <div class="card-title">Connect Your Notes Repository</div>
+  <p style="font-size:0.9rem;margin-bottom:1rem;color:var(--muted);">Your token is encrypted with your password using AES-256-GCM before being stored. Nobody can read it without your password.</p>
+  <div class="setup-field">
+    <label>GitHub Username</label>
+    <input type="text" id="inputUsername" placeholder="your-github-username"/>
+  </div>
+  <div class="setup-field">
+    <label>Personal Access Token &mdash; scope: <code>repo</code> only</label>
+    <input type="password" id="inputToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"/>
+    <p style="font-size:0.8rem;color:var(--muted);margin-top:0.4rem;">
+      Get one at: <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--gold);">github.com/settings/tokens/new</a>
+      &rarr; scope: <code>repo</code> &rarr; No expiration
+    </p>
+  </div>
+  <div class="setup-field">
+    <label>Private Notes Repo Name</label>
+    <input type="text" id="inputNotesRepo" placeholder="upsc-notes" value="upsc-notes"/>
+  </div>
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+    <button class="btn btn-gold" id="connectBtn" onclick="connectGitHub()">Connect &amp; Encrypt Token</button>
+    <button class="btn btn-red" id="disconnectBtn" onclick="disconnectGitHub()" style="display:none;">Disconnect &amp; Clear Token</button>
+  </div>
+  <div id="setupStatus" style="font-family:'DM Mono',monospace;font-size:0.72rem;margin-top:0.75rem;line-height:1.6;"></div>
+</div>
+
+<!-- How to set up repos -->
+<div class="card accent">
+  <span class="card-label">One-Time GitHub Setup</span>
+  <div class="card-title">Create Your Two Repos</div>
+  <div style="font-size:0.9rem;margin-top:0.75rem;line-height:2;">
+    <p><strong>Repo 1 &mdash; Public (the app)</strong></p>
+    <ol style="padding-left:1.2rem;margin-bottom:1rem;">
+      <li>Go to <a href="https://github.com/new" target="_blank" style="color:var(--gold);">github.com/new</a> &rarr; name it <code>upsc-command-centre</code> &rarr; <strong>Public</strong> &rarr; Create</li>
+      <li>Upload the entire <code>upsc-command-centre/</code> folder contents</li>
+      <li>Go to repo Settings &rarr; Pages &rarr; Source: main branch &rarr; Save</li>
+      <li>Your live URL: <code>https://yourusername.github.io/upsc-command-centre</code></li>
+    </ol>
+    <p><strong>Repo 2 &mdash; Private (your notes)</strong></p>
+    <ol style="padding-left:1.2rem;margin-bottom:1rem;">
+      <li>Go to <a href="https://github.com/new" target="_blank" style="color:var(--gold);">github.com/new</a> &rarr; name it <code>upsc-notes</code> &rarr; <strong>Private</strong> &rarr; check "Add README" &rarr; Create</li>
+    </ol>
+    <p><strong>Token</strong></p>
+    <ol style="padding-left:1.2rem;">
+      <li>Go to <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--gold);">github.com/settings/tokens/new</a> &rarr; Name: <code>UPSC Notes</code> &rarr; No expiration &rarr; Scope: <code>repo</code> only</li>
+      <li>Generate &rarr; copy token &rarr; paste above &rarr; click Connect</li>
+    </ol>
+  </div>
+</div>
+
+<!-- Lock session -->
+<div class="card" style="border-left:4px solid var(--rust);">
+  <span class="card-label">Session</span>
+  <div class="card-title">Lock This Session Now</div>
+  <p style="font-size:0.9rem;margin-bottom:1rem;">Immediately returns to the password gate. Token remains encrypted in localStorage.</p>
+  <button class="btn btn-red" onclick="lockApp()">&#128274; Lock Now</button>
+</div>
