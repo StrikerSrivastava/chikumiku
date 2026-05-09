@@ -543,6 +543,7 @@ code {
   font-size: 0.58rem; color: var(--muted); margin-bottom: 0.35rem;
 }
 .week-subject { font-size: 0.82rem; font-weight: 600; }
+.bs-label{font-family:'DM Mono','Courier New',monospace;font-size:0.62rem;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:0.35rem;}
 
 /* ── RESPONSIVE ── */
 @media(max-width:600px) {
@@ -551,3 +552,4 @@ code {
   .nav-inner { padding: 0 1rem; }
   #syncBar  { padding: 0.5rem 1.25rem; }
 }
+
